@@ -140,7 +140,9 @@ FUNCS = [
     ('bip32_key_get_priv_key', F([
         'bip32_in', 'out_bytes_fixedsized'
     ], out_size='32')),
-
+    ('wally_tx_from_hex', F([
+        'const_char', 'uint32_t[flags]', 'tx_out'
+    ])),
     ('wally_format_bitcoin_message', F([
         'const_bytes[message]', 'uint32_t[flags]',
     'out_bytes_sized'
