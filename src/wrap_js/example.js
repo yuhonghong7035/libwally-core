@@ -1,7 +1,14 @@
 const wally = require('./wally');
 const EC_PUBLIC_KEY_LEN = 33;
-const VERSION_PREFIX_LIQUID = '4b'
+const VERSION_PREFIX_LIQUID = '4b';
+const CA_PREFIX_LIQUID = '0c';
+const CA_PREFIX_REG_LIQUID = '04';
+
 var seed = Buffer.from('00000000000000000000000000000000', 'hex');
+var blindkey_pair = [
+  '330fd355e141910d33bbe84c369b87a209dd18b81095912be766b2b5a9d72bc4',
+  '02be99138b48b430a8ee40bf8b56c8ebc584c363774010a9bfe549a87126e61746'
+];
 
 wally.wally_sha256(Buffer.from('test', 'ascii')).then(function(uint8Array) {
   console.log(Buffer.from(uint8Array).toString('hex'))
@@ -84,6 +91,10 @@ wally.bip32_key_from_seed(Buffer.from('00000000000000000000000000000000', 'hex')
   
 }).then((addr) => {
   console.log('multisig addr: ', addr);
+  return wally.wally_confidential_addr_from_addr(addr, Buffer.from(CA_PREFIX_REG_LIQUID, 'hex').readUIntBE(0), Buffer.from(blindkey_pair[1], 'hex'));
+
+}).then((ct_addr) => {
+  console.log('confidential address: ', ct_addr);
 });
 
 wally.bip32_key_from_seed(Buffer.from('00000000000000000000000000000000', 'hex'), 0x0488ADE4, 0)
@@ -101,6 +112,11 @@ wally.bip32_key_from_seed(Buffer.from('00000000000000000000000000000000', 'hex')
 
   return wally.wally_base58_from_bytes(Buffer.concat([prefix, script]), 1);
 
-}).then((addresses) => {
-  console.log(addresses);
+}).then((address) => {
+  console.log(address);
+
+  return wally.wally_confidential_addr_from_addr(address, Buffer.from(CA_PREFIX_REG_LIQUID, 'hex').readUIntBE(0), Buffer.from(blindkey_pair[1], 'hex'));
+
+}).then((ct_addr) => {
+  console.log('confidential address: ', ct_addr);
 });
