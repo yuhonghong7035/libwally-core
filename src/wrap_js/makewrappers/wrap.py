@@ -141,6 +141,17 @@ FUNCS = [
         'bip32_in', 'out_bytes_fixedsized'
     ], out_size='32')),
 
+    # Transaction
+    ('wally_tx_get_elements_signature_hash', F([
+        'wally_tx', 'wally_tx_flags', 'size_t[index]', 'const_bytes[script]', 
+        'const_bytes[value]', 'uint32_t[sighash]', 'uint32_t[flags]',
+        'out_bytes_fixedsized'
+    ], out_size='32')),
+    ('wally_tx_set_input_script', F([
+        'wally_tx', 'wally_tx_flags', 'size_t[index]',
+        'const_bytes[script]', 'tx_byte_size', 'tx_out_bytes'
+    ])),
+
     ('wally_format_bitcoin_message', F([
         'const_bytes[message]', 'uint32_t[flags]',
     'out_bytes_sized'

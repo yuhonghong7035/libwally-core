@@ -10,6 +10,9 @@ TEMPLATE='''#include <nan.h>
 #include "../include/wally_crypto.h"
 #include "../include/wally_elements.h"
 #include "../include/wally_script.h"
+#include "../include/wally_transaction.h"
+
+#include <iostream>
 #include <vector>
 
 namespace {
@@ -97,6 +100,23 @@ struct LocalArray {
     LocalObject mArray;
 };
 
+// size_t
+static size_t GetUInt(Nan::NAN_METHOD_ARGS_TYPE info, int n, int& ret)
+{
+    size_t value = 0;
+    if (ret == WALLY_OK) {
+        if (!IsValid(info[n]) || !info[n]->IsUint32())
+            ret = WALLY_EINVAL;
+        else {
+            Nan::Maybe<uint32_t> m = Nan::To<uint32_t>(info[n]);
+            if (IsValid(m))
+                value = static_cast<size_t>(m.FromJust());
+            else
+                ret = WALLY_EINVAL;
+        }
+    }
+    return value;
+}
 
 // uint32_t values are expected as normal JS numbers from 0 to 2^32-1
 static uint32_t GetUInt32(Nan::NAN_METHOD_ARGS_TYPE info, int n, int& ret)
@@ -237,6 +257,9 @@ def _generate_nan(funcname, f):
             input_args.append('LocalBuffer arg%s(info, %s, ret);' % (i, i))
             args.append('arg%s.mData' % i)
             args.append('arg%s.mLength' % i)
+        elif arg.startswith('size_t'):
+            input_args.append('size_t arg%s = GetUInt(info, %s, ret);' % (i, i))
+            args.append('arg%s' % i)
         elif arg.startswith('uint32_t'):
             input_args.append('uint32_t arg%s = GetUInt32(info, %s, ret);' % (i, i))
             args.append('arg%s' % i)
@@ -318,6 +341,24 @@ def _generate_nan(funcname, f):
                 '}',
             ])
             cur_out += 1
+        elif arg == 'wally_tx':
+            input_args.append('struct wally_tx *tx;')
+            args.append('tx')
+            output_args.append((
+                'ret = wally_tx_from_hex(*Nan::Utf8String(info[%s]), tx_flags, &tx);'
+            ) % i)
+        elif arg == 'wally_tx_flags':
+            input_args.append('uint32_t tx_flags = GetUInt32(info, %s, ret);' % i)
+        elif arg == 'tx_byte_size':
+            input_args.append('const uint32_t tx_out_size = GetUInt32(info, %s, ret);' % i)
+        elif arg == 'tx_out_bytes':
+            postprocessing.extend([
+                'unsigned char *res_ptr = Allocate(tx_out_size, ret);',
+                'size_t out_size = 0;',
+                'if (ret == WALLY_OK)', 
+                '    ret = wally_tx_to_bytes(tx, tx_flags, res_ptr, tx_out_size, &out_size);',
+                'LocalObject res = AllocateBuffer(res_ptr, out_size, tx_out_size, ret);',
+            ])
         elif arg == 'bip32_in':
             input_args.append((
                 'ext_key* inkey;'
