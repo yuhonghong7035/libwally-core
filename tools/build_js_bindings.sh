@@ -13,4 +13,4 @@ make -o configure clean
 make -o configure -j $num_jobs
 make -o configure check
 
-./tools/cleanup.sh
+#./tools/cleanup.sh

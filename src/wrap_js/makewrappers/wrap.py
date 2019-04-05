@@ -125,6 +125,9 @@ FUNCS = [
     ('wally_ec_sig_to_der', F([
         'const_bytes[sig]', 'out_bytes_sized'
     ], out_size='72')),
+    ('wally_ec_public_key_from_private_key', F([
+        'const_bytes[key]', 'out_bytes_fixedsized'
+    ], out_size='33')),
 
     # BIP32:
     ('bip32_key_from_seed', F([
